@@ -11,6 +11,6 @@ chooose = (
 )
 
 class Movie(models.Model):
-    title = models.CharField(max_length=45,null=True)
+    title = models.CharField(max_length=45, unique=True,null=True)
     rating = models.PositiveSmallIntegerField(choices=chooose)
     year = models.PositiveIntegerField(validators=[MinValueValidator(1799),MaxValueValidator(2030),])

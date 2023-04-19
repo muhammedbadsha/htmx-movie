@@ -1,4 +1,5 @@
 import json
+from django.views.decorators.http import require_POST
 from django.shortcuts import render,redirect,HttpResponse
 from .forms import MovieForm
 from .models import Movie
@@ -39,14 +40,30 @@ def edit_movie(request,pk, template_name='movie_forms.html'):
         forms = MovieForm(request.POST,instance=movie)
         if forms.is_valid():
             forms.save()
-            return HttpResponse('/')
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "movieListChanged": None,
+                        "showMessage": f"{movie.title} updated."
+                    })
+                }
+            )
     else:
         forms = MovieForm(instance = movie)
 
     return render(request, template_name,{'form':forms,'movie':movie})
         
+
+@ require_POST
 def remove_movie(request,pk):
     movie = Movie.objects.get(pk = pk)
     movie.delete()
-    mess = messages.success(request,'movie removed successfully')
-    return render(request, 'movie_forms.html',{'message':mess})
+    
+    return HttpResponse(status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "movieListChanged": None,
+                        "showMessage": f"{movie.title} deleted."
+                    })
+                })  
